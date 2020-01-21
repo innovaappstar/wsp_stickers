@@ -146,6 +146,7 @@ public class StickerPackValidator {
                 throw new IllegalStateException("Error parsing webp image, sticker pack identifier:" + identifier + ", filename:" + fileName, e);
             }
         } catch (IOException e) {
+            Log.d("error", e.getMessage());
             throw new IllegalStateException("cannot open sticker file: sticker pack identifier:" + identifier + ", filename:" + fileName, e);
         }
     }

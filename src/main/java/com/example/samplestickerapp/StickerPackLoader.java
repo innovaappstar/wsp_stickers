@@ -52,7 +52,7 @@ public class StickerPackLoader {
         String queryPath = StickerContentProvider.AUTHORITY_URI.toString();
         final Cursor cursor = context.getContentResolver().query(StickerContentProvider.AUTHORITY_URI, null, null, null, null);
         if (cursor == null) {
-            throw new IllegalStateException("could not fetch from content provider, " + BuildConfig.CONTENT_PROVIDER_AUTHORITY);
+            throw new IllegalStateException("could not fetch from content provider, " + StickerContentProvider.CONTENT_PROVIDER_AUTHORITY);
         }
         HashSet<String> identifierSet = new HashSet<>();
         final ArrayList<StickerPack> stickerPackList = fetchFromContentProvider(cursor,context);
@@ -197,7 +197,7 @@ public class StickerPackLoader {
     }
 
     private static Uri getStickerListUri(String identifier) {
-        return new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(BuildConfig.CONTENT_PROVIDER_AUTHORITY).appendPath(StickerContentProvider.STICKERS).appendPath(identifier).build();
+        return new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(StickerContentProvider.CONTENT_PROVIDER_AUTHORITY).appendPath(StickerContentProvider.STICKERS).appendPath(identifier).build();
     }
 
     static Uri getStickerAssetUri(String identifier, String stickerName) {

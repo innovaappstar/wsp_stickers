@@ -26,6 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.samplestickerapp.entities.StickerContentGson;
+import com.facebook.drawee.backends.pipeline.Fresco;
 import com.google.gson.Gson;
 
 import java.io.BufferedInputStream;
@@ -64,7 +65,12 @@ public class StickerContentProvider extends ContentProvider {
     public static final String STICKER_FILE_EMOJI_IN_QUERY = "sticker_emoji";
     private static final String CONTENT_FILE_NAME = "contents.json";
 
-    public static final Uri AUTHORITY_URI = new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(BuildConfig.CONTENT_PROVIDER_AUTHORITY).appendPath(StickerContentProvider.METADATA).build();
+    public static String CONTENT_PROVIDER_AUTHORITY = "";
+    // private static String METADATA = "";
+
+
+    public static Uri AUTHORITY_URI = null; /* new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(BuildConfig.CONTENT_PROVIDER_AUTHORITY)
+            .appendPath(StickerContentProvider.METADATA).build();*/
 
     /**
      * Do not change the values in the UriMatcher because otherwise, WhatsApp will not be able to fetch the stickers from the ContentProvider.
@@ -108,10 +114,25 @@ public class StickerContentProvider extends ContentProvider {
         return true;
     }
 
+    /**
+     * set content provider authority
+     * @param contentProviderAuthority
+     */
+    public static void setContentProviderAuthority(String contentProviderAuthority) {
+        CONTENT_PROVIDER_AUTHORITY = contentProviderAuthority;
+        WhitelistCheck.STICKER_APP_AUTHORITY = contentProviderAuthority;
+        AUTHORITY_URI = new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(CONTENT_PROVIDER_AUTHORITY).appendPath(StickerContentProvider.METADATA).build();
+    }
+
+
+
     // method #1_agregarlas_uris_de_busqueda
     public static void initContentProvider(String jsonString){
+        Fresco.initialize(CONTEXT);
+
         StickerContentProvider.JSON_STRING = jsonString;
-        final String authority = BuildConfig.CONTENT_PROVIDER_AUTHORITY;
+//        final String authority = BuildConfig.CONTENT_PROVIDER_AUTHORITY;
+        final String authority = CONTENT_PROVIDER_AUTHORITY;
         if (!authority.startsWith(Objects.requireNonNull(CONTEXT).getPackageName())) {
             throw new IllegalStateException("your authority (" + authority + ") for the content provider should start with your package name: " + CONTEXT.getPackageName());
         }
@@ -193,11 +214,11 @@ public class StickerContentProvider extends ContentProvider {
         final int matchCode = MATCHER.match(uri);
         switch (matchCode) {
             case METADATA_CODE:
-                return "vnd.android.cursor.dir/vnd." + BuildConfig.CONTENT_PROVIDER_AUTHORITY + "." + METADATA;
+                return "vnd.android.cursor.dir/vnd." + CONTENT_PROVIDER_AUTHORITY + "." + METADATA;
             case METADATA_CODE_FOR_SINGLE_PACK:
-                return "vnd.android.cursor.item/vnd." + BuildConfig.CONTENT_PROVIDER_AUTHORITY + "." + METADATA;
+                return "vnd.android.cursor.item/vnd." + CONTENT_PROVIDER_AUTHORITY + "." + METADATA;
             case STICKERS_CODE:
-                return "vnd.android.cursor.dir/vnd." + BuildConfig.CONTENT_PROVIDER_AUTHORITY + "." + STICKERS;
+                return "vnd.android.cursor.dir/vnd." + CONTENT_PROVIDER_AUTHORITY + "." + STICKERS;
             case STICKERS_ASSET_CODE:
                 return "image/webp";
             case STICKER_PACK_TRAY_ICON_CODE:

@@ -88,7 +88,7 @@ public abstract class AddStickerPackActivity extends BaseActivity {
         Intent intent = new Intent();
         intent.setAction("com.whatsapp.intent.action.ENABLE_STICKER_PACK");
         intent.putExtra(StickerPackDetailsActivity.EXTRA_STICKER_PACK_ID, identifier);
-        intent.putExtra(StickerPackDetailsActivity.EXTRA_STICKER_PACK_AUTHORITY, BuildConfig.CONTENT_PROVIDER_AUTHORITY);
+        intent.putExtra(StickerPackDetailsActivity.EXTRA_STICKER_PACK_AUTHORITY, StickerContentProvider.CONTENT_PROVIDER_AUTHORITY);
         intent.putExtra(StickerPackDetailsActivity.EXTRA_STICKER_PACK_NAME, stickerPackName);
         return intent;
     }

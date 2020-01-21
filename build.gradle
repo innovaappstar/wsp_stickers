@@ -1,36 +1,38 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 
 android {
     //the compression of webp file during build causes problem with FileDescriptor in ContentProvider.
     aaptOptions {
         noCompress "webp"
     }
+
     compileSdkVersion 28
     defaultConfig {
-        applicationId "com.example.samplestickerapp"
-        minSdkVersion 15
+//        applicationId "com.example.samplestickerapp"
+        minSdkVersion 19
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        def contentProviderAuthority = applicationId + ".stickercontentprovider"
+        //def contentProviderAuthority = applicationId + ".stickercontentprovider"
+//        def contentProviderAuthority =  "com.abexa.myapptest.stickercontentprovider"
         // Creates a placeholder property to use in the manifest.
-        manifestPlaceholders =
-                [contentProviderAuthority: contentProviderAuthority]
-        // Adds a new field for the authority to the BuildConfig class.
-        buildConfigField("String",
-                "CONTENT_PROVIDER_AUTHORITY",
-                "\"${contentProviderAuthority}\"")
+//        manifestPlaceholders =
+//                [contentProviderAuthority: contentProviderAuthority]
+//        // Adds a new field for the authority to the BuildConfig class.
+//        buildConfigField("String",
+//                "CONTENT_PROVIDER_AUTHORITY",
+//                "\"${contentProviderAuthority}\"")
     }
     buildTypes {
         debug {
             minifyEnabled false
-            shrinkResources false
+//            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         release {
             minifyEnabled true
-            shrinkResources true
+//            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
