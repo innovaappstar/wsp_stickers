@@ -25,20 +25,25 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.samplestickerapp.entities.StickerContentGson;
+import com.google.gson.Gson;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class StickerContentProvider extends ContentProvider {
 
+    private static Context CONTEXT;
+    private static String JSON_STRING;
     /**
      * Do not change the strings listed below, as these are used by WhatsApp. And changing these will break the interface between sticker app and WhatsApp.
      */
@@ -64,7 +69,8 @@ public class StickerContentProvider extends ContentProvider {
     /**
      * Do not change the values in the UriMatcher because otherwise, WhatsApp will not be able to fetch the stickers from the ContentProvider.
      */
-    private static final UriMatcher MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
+    // private static final UriMatcher MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
+    private static UriMatcher MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
     private static final String METADATA = "metadata";
     private static final int METADATA_CODE = 1;
 
@@ -78,15 +84,38 @@ public class StickerContentProvider extends ContentProvider {
 
     private static final int STICKER_PACK_TRAY_ICON_CODE = 5;
 
-    private List<StickerPack> stickerPackList;
+    private static List<StickerPack> stickerPackList;
 
     @Override
     public boolean onCreate() {
-        final String authority = BuildConfig.CONTENT_PROVIDER_AUTHORITY;
-        if (!authority.startsWith(Objects.requireNonNull(getContext()).getPackageName())) {
-            throw new IllegalStateException("your authority (" + authority + ") for the content provider should start with your package name: " + getContext().getPackageName());
-        }
+            CONTEXT = getContext();
+//        //the call to get the metadata for the sticker packs.
+//        MATCHER.addURI(authority, METADATA, METADATA_CODE);
+//
+//        //the call to get the metadata for single sticker pack. * represent the identifier
+//        MATCHER.addURI(authority, METADATA + "/*", METADATA_CODE_FOR_SINGLE_PACK);
+//
+//        //gets the list of stickers for a sticker pack, * respresent the identifier.
+//        MATCHER.addURI(authority, STICKERS + "/*", STICKERS_CODE);
 
+//        List<StickerPack> listStickers = getStickerPackList();
+//        for (StickerPack stickerPack : getStickerPackList()) {
+//            MATCHER.addURI(authority, STICKERS_ASSET + "/" + stickerPack.identifier + "/" + stickerPack.trayImageFile, STICKER_PACK_TRAY_ICON_CODE);
+//            for (Sticker sticker : stickerPack.getStickers()) {
+//                MATCHER.addURI(authority, STICKERS_ASSET + "/" + stickerPack.identifier + "/" + sticker.imageFileName, STICKERS_ASSET_CODE);
+//            }
+//        }
+        return true;
+    }
+
+    // method #1_agregarlas_uris_de_busqueda
+    public static void initContentProvider(String jsonString){
+        StickerContentProvider.JSON_STRING = jsonString;
+        final String authority = BuildConfig.CONTENT_PROVIDER_AUTHORITY;
+        if (!authority.startsWith(Objects.requireNonNull(CONTEXT).getPackageName())) {
+            throw new IllegalStateException("your authority (" + authority + ") for the content provider should start with your package name: " + CONTEXT.getPackageName());
+        }
+        MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
         //the call to get the metadata for the sticker packs.
         MATCHER.addURI(authority, METADATA, METADATA_CODE);
 
@@ -103,8 +132,6 @@ public class StickerContentProvider extends ContentProvider {
                 MATCHER.addURI(authority, STICKERS_ASSET + "/" + stickerPack.identifier + "/" + sticker.imageFileName, STICKERS_ASSET_CODE);
             }
         }
-
-        return true;
     }
 
     @Override
@@ -181,21 +208,31 @@ public class StickerContentProvider extends ContentProvider {
     }
 
     /**
+     *
+     *   public <T> T fromJson(String json, Class<T> classOfT) throws JsonSyntaxException {
+     *     Object object = fromJson(json, (Type) classOfT);
+     *     return Primitives.wrap(classOfT).cast(object);
+     *   }
      * lee el archivo *.json y recupera la lista de entidades de stickerPackList..
      * @param context Context
      */
-    private synchronized void readContentFile(@NonNull Context context) {
-        try (InputStream contentsInputStream = context.getAssets().open(CONTENT_FILE_NAME)) {
-//            String jsonString = readInputStreamAsString(contentsInputStream);
-            stickerPackList = ContentFileParser.parseStickerPacks(contentsInputStream);
-        } catch (IOException | IllegalStateException e) {
-            throw new RuntimeException(CONTENT_FILE_NAME + " file has some issues: " + e.getMessage(), e);
+    public static synchronized void readContentFile(@NonNull Context context,String jsonString) {
+        Gson gson = new Gson();
+
+        try {
+            StickerContentGson[] stickerContentGsons = gson.fromJson(jsonString, StickerContentGson[].class);
+            List<StickerContentGson> alStickerContentGson = Arrays.asList(stickerContentGsons);
+
+            stickerPackList = ContentFileParser.mergeBetweenStickerPack(context,alStickerContentGson);
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
-    private List<StickerPack> getStickerPackList() {
+
+    private static List<StickerPack> getStickerPackList() {
         if (stickerPackList == null) {
-            readContentFile(Objects.requireNonNull(getContext()));
+            readContentFile(Objects.requireNonNull(CONTEXT),JSON_STRING);
         }
         return stickerPackList;
     }

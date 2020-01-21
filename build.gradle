@@ -111,6 +111,7 @@ dependencies {
     implementation 'com.facebook.fresco:webpsupport:2.0.0'
     implementation 'com.facebook.fresco:animated-webp:2.0.0'
     implementation 'com.facebook.fresco:animated-base:2.0.0'
+    implementation 'com.google.code.gson:gson:2.8.6'
 
     implementation 'com.snatik:storage:2.1.0'
 

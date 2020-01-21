@@ -12,12 +12,16 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 
 import androidx.annotation.NonNull;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -38,20 +42,20 @@ import static com.example.samplestickerapp.StickerContentProvider.STICKER_PACK_N
 import static com.example.samplestickerapp.StickerContentProvider.STICKER_PACK_PUBLISHER_IN_QUERY;
 import static com.example.samplestickerapp.StickerContentProvider.IMAGE_DATA_VERSION;
 
-class StickerPackLoader {
+public class StickerPackLoader {
 
     /**
      * Get the list of sticker packs for the sticker content provider
      */
     @NonNull
-    static ArrayList<StickerPack> fetchStickerPacks(Context context) throws IllegalStateException {
+    public static ArrayList<StickerPack> fetchStickerPacks(Context context) throws IllegalStateException {
         String queryPath = StickerContentProvider.AUTHORITY_URI.toString();
         final Cursor cursor = context.getContentResolver().query(StickerContentProvider.AUTHORITY_URI, null, null, null, null);
         if (cursor == null) {
             throw new IllegalStateException("could not fetch from content provider, " + BuildConfig.CONTENT_PROVIDER_AUTHORITY);
         }
         HashSet<String> identifierSet = new HashSet<>();
-        final ArrayList<StickerPack> stickerPackList = fetchFromContentProvider(cursor);
+        final ArrayList<StickerPack> stickerPackList = fetchFromContentProvider(cursor,context);
         for (StickerPack stickerPack : stickerPackList) {
             if (identifierSet.contains(stickerPack.identifier)) {
                 throw new IllegalStateException("sticker pack identifiers should be unique, there are more than one pack with identifier:" + stickerPack.identifier);
@@ -90,7 +94,7 @@ class StickerPackLoader {
 
 
     @NonNull
-    private static ArrayList<StickerPack> fetchFromContentProvider(Cursor cursor) {
+    private static ArrayList<StickerPack> fetchFromContentProvider(Cursor cursor,Context context) {
         ArrayList<StickerPack> stickerPackList = new ArrayList<>();
         cursor.moveToFirst();
         do {
@@ -109,6 +113,7 @@ class StickerPackLoader {
             final StickerPack stickerPack = new StickerPack(identifier, name, publisher, trayImage, publisherEmail, publisherWebsite, privacyPolicyWebsite, licenseAgreementWebsite, imageDataVersion, avoidCache);
             stickerPack.setAndroidPlayStoreLink(androidPlayStoreLink);
             stickerPack.setIosAppStoreLink(iosAppLink);
+            stickerPack.setIsWhitelisted(WhitelistCheck.isWhitelisted(context, stickerPack.identifier));
             stickerPackList.add(stickerPack);
         } while (cursor.moveToNext());
         return stickerPackList;
@@ -135,7 +140,38 @@ class StickerPackLoader {
         return stickers;
     }
 
+
+
+//    @Nullable
+//    @Override
+//    public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode) {
+//        final List<String> pathSegments = uri.getPathSegments();
+//
+//        if (pathSegments.size() != 3) {
+//            throw new IllegalArgumentException("path segments should be 3, uri is: " + uri);
+//        }
+//        String fileName = pathSegments.get(pathSegments.size() - 1);
+//        final String identifier = pathSegments.get(pathSegments.size() - 2);
+//
+//        if (TextUtils.isEmpty(identifier)) {
+//            throw new IllegalArgumentException("identifier is empty, uri: " + uri);
+//        }
+//        if (TextUtils.isEmpty(fileName)) {
+//            throw new IllegalArgumentException("file name is empty, uri: " + uri);
+//        }
+//        try{
+//            // content://com.example.samplestickerapp.stickercontentprovider/stickers_asset/1/01_Cuppy_smile.webp
+//            String pathStickers = "/storage/emulated/0/assets/";
+//            File file = new File(pathStickers + "/" + identifier, fileName);
+//            return ParcelFileDescriptor.open(file,ParcelFileDescriptor.MODE_READ_ONLY);
+//        } catch (FileNotFoundException e){
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+
     static byte[] fetchStickerAsset(@NonNull final String identifier, @NonNull final String name, ContentResolver contentResolver) throws IOException {
+        //try (final InputStream inputStream = contentResolver.openInputStream(getStickerAssetUri(identifier, name));
         try (final InputStream inputStream = contentResolver.openInputStream(getStickerAssetUri(identifier, name));
              final ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
             if (inputStream == null) {
@@ -147,6 +183,15 @@ class StickerPackLoader {
             while ((read = inputStream.read(data, 0, data.length)) != -1) {
                 buffer.write(data, 0, read);
             }
+            try{
+                // content://com.example.samplestickerapp.stickercontentprovider/stickers_asset/1/01_Cuppy_smile.webp
+                String pathStickers = "/storage/emulated/0/assets/";
+                File file = new File(pathStickers + "/" + identifier, name);
+
+
+            } catch (Exception e){
+                e.printStackTrace();
+            }
             return buffer.toByteArray();
         }
     }
@@ -156,6 +201,9 @@ class StickerPackLoader {
     }
 
     static Uri getStickerAssetUri(String identifier, String stickerName) {
-        return new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(BuildConfig.CONTENT_PROVIDER_AUTHORITY).appendPath(StickerContentProvider.STICKERS_ASSET).appendPath(identifier).appendPath(stickerName).build();
+        String pathStickers = "/storage/emulated/0/assets/";
+        File file = new File(pathStickers + "/" + identifier, stickerName);
+        return Uri.fromFile(file);
+//        return new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(BuildConfig.CONTENT_PROVIDER_AUTHORITY).appendPath(StickerContentProvider.STICKERS_ASSET).appendPath(identifier).appendPath(stickerName).build();
     }
 }

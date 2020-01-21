@@ -8,10 +8,15 @@
 
 package com.example.samplestickerapp;
 
+import android.content.Context;
 import android.text.TextUtils;
 import android.util.JsonReader;
 
 import androidx.annotation.NonNull;
+
+import com.example.samplestickerapp.entities.StickerContentGson;
+import com.example.samplestickerapp.entities.StickerGson;
+import com.example.samplestickerapp.entities.StickerPackGson;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +33,52 @@ class ContentFileParser {
         try (JsonReader reader = new JsonReader(new InputStreamReader(contentsInputStream))) {
             return readStickerPacks(reader);
         }
+    }
+
+    @NonNull
+    static List<StickerPack> mergeBetweenStickerPack(@NonNull Context context,@NonNull List<StickerContentGson> alStickerContentGson){
+        List<StickerPack> listStickerPack = new ArrayList<>();
+
+        for (int i = 0; i < alStickerContentGson.size(); i++) {
+            StickerContentGson stickerContentGson = alStickerContentGson.get(i);
+            for (int j = 0; j < stickerContentGson.sticker_packs.size(); j++) {
+                StickerPackGson stickerPackGson = stickerContentGson.sticker_packs.get(j);
+
+                String identifier = stickerPackGson.identifier;
+                String name = stickerPackGson.name;
+                String publisher = stickerPackGson.publisher;
+                String trayImageFile = stickerPackGson.tray_image_file;
+                String publisherEmail = stickerPackGson.publisher_email;
+                String publisherWebsite = stickerPackGson.publisher_website;
+                String privacyPolicyWebsite = stickerPackGson.privacy_policy_website;
+                String licenseAgreementWebsite = stickerPackGson.license_agreement_website;
+                String imageDataVersion = stickerPackGson.image_data_version;
+                boolean avoidCache = stickerPackGson.avoid_cache;
+                List<Sticker> stickers = new ArrayList<>();
+
+                String iosAppStoreLink = stickerContentGson.ios_app_store_link;
+                for (int k = 0; k < stickerPackGson.stickers.size(); k++) {
+                    StickerGson stickerGson = stickerPackGson.stickers.get(k);
+                    String imageFileName = stickerGson.image_file;
+                    ArrayList<String> emojis = stickerGson.emojis;
+                    Sticker sticker = new Sticker(imageFileName ,emojis);
+
+                    stickers.add(sticker);
+                }
+
+                String androidPlayStoreLink = stickerContentGson.android_play_store_link;
+                boolean isWhitelisted = WhitelistCheck.isWhitelisted(context,stickerPackGson.identifier);
+
+                StickerPack stickerPack = new StickerPack( identifier,  name,  publisher,  trayImageFile,  publisherEmail,  publisherWebsite,  privacyPolicyWebsite,  licenseAgreementWebsite,  imageDataVersion, avoidCache);
+                stickerPack.setAndroidPlayStoreLink(androidPlayStoreLink);
+                stickerPack.setIosAppStoreLink(iosAppStoreLink);
+                stickerPack.setIsWhitelisted(isWhitelisted);
+                stickerPack.setStickers(stickers);
+
+                listStickerPack.add(stickerPack);
+            }
+        }
+        return listStickerPack;
     }
 
     @NonNull

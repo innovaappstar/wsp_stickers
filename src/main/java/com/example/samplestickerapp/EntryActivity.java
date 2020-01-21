@@ -26,6 +26,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.samplestickerapp.asyncTask.LoadStickersListAsyncTask;
 import com.snatik.storage.Storage;
 import com.snatik.storage.helpers.OrderType;
 
@@ -39,7 +40,8 @@ import java.util.Map;
 
 public class EntryActivity extends BaseActivity {
     private View progressBar;
-    private LoadListAsyncTask loadListAsyncTask;
+//    private LoadListAsyncTask loadListAsyncTask;
+    private LoadStickersListAsyncTask loadListAsyncTask;
     Storage storage = null;
 
     @Override
@@ -55,14 +57,177 @@ public class EntryActivity extends BaseActivity {
         // todo
         if(checkAndRequestWriteExternalStoragePermissions(this)){
             showFiles(storage.getExternalStorageDirectory());
+            readFiles(EntryActivity.this, storage);
+
+            //region JsonString
+            String jsonString = "[{\n" +
+                    "  \"android_play_store_link\": \"\",\n" +
+                    "  \"ios_app_store_link\": \"\",\n" +
+                    "  \"sticker_packs\": [\n" +
+                    "    {\n" +
+                    "      \"identifier\": \"1\",\n" +
+                    "      \"name\": \"Cuppy\",\n" +
+                    "      \"publisher\": \"Jane Doe\",\n" +
+                    "      \"tray_image_file\": \"tray_Cuppy.png\",\n" +
+                    "      \"image_data_version\":\"1\",\n" +
+                    "      \"avoid_cache\":false,\n" +
+                    "      \"publisher_email\":\"\",\n" +
+                    "      \"publisher_website\": \"\",\n" +
+                    "      \"privacy_policy_website\": \"\",\n" +
+                    "      \"license_agreement_website\": \"\",\n" +
+                    "      \"stickers\": [\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"01_Cuppy_smile.webp\",\n" +
+                    "          \"emojis\": [\"☕\",\"\uD83D\uDE42\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"02_Cuppy_lol.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDE04\",\"\uD83D\uDE00\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"03_Cuppy_rofl.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDE06\",\"\uD83D\uDE02\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"04_Cuppy_sad.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDE29\",\"\uD83D\uDE30\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"05_Cuppy_cry.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDE2D\",\"\uD83D\uDCA7\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"06_Cuppy_love.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDE0D\",\"♥\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"07_Cuppy_hate.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDC94\",\"\uD83D\uDC4E\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"08_Cuppy_lovewithmug.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDE0D\",\"\uD83D\uDC91\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"09_Cuppy_lovewithcookie.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDE18\",\"\uD83C\uDF6A\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"10_Cuppy_hmm.webp\",\n" +
+                    "          \"emojis\": [\"\uD83E\uDD14\",\"\uD83D\uDE10\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"11_Cuppy_upset.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDE31\",\"\uD83D\uDE35\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"12_Cuppy_angry.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDE21\",\"\uD83D\uDE20\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"13_Cuppy_curious.webp\",\n" +
+                    "          \"emojis\": [\"❓\",\"\uD83E\uDD14\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"14_Cuppy_weird.webp\",\n" +
+                    "          \"emojis\": [\"\uD83C\uDF08\",\"\uD83D\uDE1C\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"15_Cuppy_bluescreen.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDCBB\",\"\uD83D\uDE29\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"16_Cuppy_angry.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDE21\",\"\uD83D\uDE24\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"17_Cuppy_tired.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDE29\",\"\uD83D\uDE28\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"18_Cuppy_workhard.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDCBB\",\"\uD83C\uDF03\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"19_Cuppy_shine.webp\",\n" +
+                    "          \"emojis\": [\"\uD83C\uDF89\",\"✨\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"20_Cuppy_disgusting.webp\",\n" +
+                    "          \"emojis\": [\"\uD83E\uDD2E\",\"\uD83D\uDC4E\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"21_Cuppy_hi.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDD90\",\"\uD83D\uDE4B\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"22_Cuppy_bye.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDD90\",\"\uD83D\uDC4B\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"23_Cuppy_greentea.webp\",\n" +
+                    "          \"emojis\": [\"\uD83C\uDF75\",\"\uD83D\uDE0C\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"24_Cuppy_phone.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDCF1\",\"\uD83D\uDE26\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"25_Cuppy_battery.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDD0B\",\"\uD83D\uDE35\"]\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"identifier\": \"2\",\n" +
+                    "      \"name\": \"FF\",\n" +
+                    "      \"publisher\": \"Abexa\",\n" +
+                    "      \"tray_image_file\": \"identifier_png.png\",\n" +
+                    "      \"image_data_version\":\"1\",\n" +
+                    "      \"avoid_cache\":false,\n" +
+                    "      \"publisher_email\":\"\",\n" +
+                    "      \"publisher_website\": \"\",\n" +
+                    "      \"privacy_policy_website\": \"\",\n" +
+                    "      \"license_agreement_website\": \"\",\n" +
+                    "      \"stickers\": [\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"icon3.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDE04\",\"\uD83D\uDE00\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"icon4.webp\",\n" +
+                    "          \"emojis\": [\"☕\",\"\uD83D\uDE42\"]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "          \"image_file\": \"icon5.webp\",\n" +
+                    "          \"emojis\": [\"\uD83D\uDE04\",\"\uD83D\uDE00\"]\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}]\n";
+            //endregion
+
+            // paso 1 : setear el json string
+            StickerContentProvider.initContentProvider(jsonString);
+
+            progressBar = findViewById(R.id.entry_activity_progress);
+            // paso 2 : recuperar la lista de stickers guardados en memoria (cursores de content provider)
+            loadListAsyncTask = new LoadStickersListAsyncTask(this, new LoadStickersListAsyncTask.IStickerResult() {
+                @Override
+                public void onShowErrorMessage(String desResult) {
+                    showErrorMessage(desResult);
+                }
+
+                @Override
+                public void onShowStickerPack(ArrayList<StickerPack> alStickerPack) {
+                    showStickerPack(alStickerPack);
+                }
+            });
+            loadListAsyncTask.execute();
         }else{
 
         }
-        readFiles(EntryActivity.this, storage);
-
-        progressBar = findViewById(R.id.entry_activity_progress);
-        loadListAsyncTask = new LoadListAsyncTask(this);
-        loadListAsyncTask.execute();
 
     }
 
@@ -218,47 +383,47 @@ public class EntryActivity extends BaseActivity {
         }
     }
 
-    static class LoadListAsyncTask extends AsyncTask<Void, Void, Pair<String, ArrayList<StickerPack>>> {
-        private final WeakReference<EntryActivity> contextWeakReference;
-
-        LoadListAsyncTask(EntryActivity activity) {
-            this.contextWeakReference = new WeakReference<>(activity);
-        }
-
-        @Override
-        protected Pair<String, ArrayList<StickerPack>> doInBackground(Void... voids) {
-            ArrayList<StickerPack> stickerPackList;
-            try {
-                final Context context = contextWeakReference.get();
-                if (context != null) {
-                    stickerPackList = StickerPackLoader.fetchStickerPacks(context);
-                    if (stickerPackList.size() == 0) {
-                        return new Pair<>("could not find any packs", null);
-                    }
-                    for (StickerPack stickerPack : stickerPackList) {
-                        StickerPackValidator.verifyStickerPackValidity(context, stickerPack);
-                    }
-                    return new Pair<>(null, stickerPackList);
-                } else {
-                    return new Pair<>("could not fetch sticker packs", null);
-                }
-            } catch (Exception e) {
-                Log.e("EntryActivity", "error fetching sticker packs", e);
-                return new Pair<>(e.getMessage(), null);
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Pair<String, ArrayList<StickerPack>> stringListPair) {
-
-            final EntryActivity entryActivity = contextWeakReference.get();
-            if (entryActivity != null) {
-                if (stringListPair.first != null) {
-                    entryActivity.showErrorMessage(stringListPair.first);
-                } else {
-                    entryActivity.showStickerPack(stringListPair.second);
-                }
-            }
-        }
-    }
+//    static class LoadListAsyncTask extends AsyncTask<Void, Void, Pair<String, ArrayList<StickerPack>>> {
+//        private final WeakReference<EntryActivity> contextWeakReference;
+//
+//        LoadListAsyncTask(EntryActivity activity) {
+//            this.contextWeakReference = new WeakReference<>(activity);
+//        }
+//
+//        @Override
+//        protected Pair<String, ArrayList<StickerPack>> doInBackground(Void... voids) {
+//            ArrayList<StickerPack> stickerPackList;
+//            try {
+//                final Context context = contextWeakReference.get();
+//                if (context != null) {
+//                    stickerPackList = StickerPackLoader.fetchStickerPacks(context);
+//                    if (stickerPackList.size() == 0) {
+//                        return new Pair<>("could not find any packs", null);
+//                    }
+//                    for (StickerPack stickerPack : stickerPackList) {
+//                        StickerPackValidator.verifyStickerPackValidity(context, stickerPack);
+//                    }
+//                    return new Pair<>(null, stickerPackList);
+//                } else {
+//                    return new Pair<>("could not fetch sticker packs", null);
+//                }
+//            } catch (Exception e) {
+//                Log.e("EntryActivity", "error fetching sticker packs", e);
+//                return new Pair<>(e.getMessage(), null);
+//            }
+//        }
+//
+//        @Override
+//        protected void onPostExecute(Pair<String, ArrayList<StickerPack>> stringListPair) {
+//
+//            final EntryActivity entryActivity = contextWeakReference.get();
+//            if (entryActivity != null) {
+//                if (stringListPair.first != null) {
+//                    entryActivity.showErrorMessage(stringListPair.first);
+//                } else {
+//                    entryActivity.showStickerPack(stringListPair.second);
+//                }
+//            }
+//        }
+//    }
 }
